@@ -112,6 +112,7 @@ public final class LiteJobFacade implements JobFacade {
                 return executionContextService.getJobShardingContext(failoverShardingItems);
             }
         }
+        //desc 根据节点情况，（主节点）计算分片
         shardingService.shardingIfNecessary();
         List<Integer> shardingItems = shardingService.getLocalShardingItems();
         if (isFailover) {
@@ -140,8 +141,10 @@ public final class LiteJobFacade implements JobFacade {
     public boolean isEligibleForJobRunning() {
         LiteJobConfiguration liteJobConfig = configService.load(true);
         if (liteJobConfig.getTypeConfig() instanceof DataflowJobConfiguration) {
-            return !shardingService.isNeedSharding() && ((DataflowJobConfiguration) liteJobConfig.getTypeConfig()).isStreamingProcess();    
+            //不需要分片&&当前的作业类型是流式运算
+            return !shardingService.isNeedSharding() && ((DataflowJobConfiguration) liteJobConfig.getTypeConfig()).isStreamingProcess();
         }
+        //不需要分片&&当前的作业类型是流式运算
         return !shardingService.isNeedSharding();
     }
     

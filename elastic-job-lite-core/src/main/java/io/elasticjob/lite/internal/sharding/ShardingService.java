@@ -102,13 +102,21 @@ public final class ShardingService {
     public void shardingIfNecessary() {
         List<JobInstance> availableJobInstances = instanceService.getAvailableJobInstances();
         if (!isNeedSharding() || availableJobInstances.isEmpty()) {
+            //case1 不需要计算分片的情况
             return;
         }
         if (!leaderService.isLeaderUntilBlock()) {
+            //case2 为从节点
+            //desc 阻塞,直到(主节点)计算分片结束
             blockUntilShardingCompleted();
             return;
         }
+
+        //case3 为主节点
+        //step1 等待其他分片任务结束
         waitingOtherShardingItemCompleted();
+
+        //step2 计算分片
         LiteJobConfiguration liteJobConfig = configService.load(false);
         int shardingTotalCount = liteJobConfig.getTypeConfig().getCoreConfig().getShardingTotalCount();
         log.debug("Job '{}' sharding begin.", jobName);
@@ -148,6 +156,7 @@ public final class ShardingService {
     
     /**
      * 获取作业运行实例的分片项集合.
+     * desc 获取本机需要处理的对应的分片
      *
      * @param jobInstanceId 作业运行实例主键
      * @return 作业运行实例的分片项集合
@@ -160,6 +169,7 @@ public final class ShardingService {
         List<Integer> result = new LinkedList<>();
         int shardingTotalCount = configService.load(true).getTypeConfig().getCoreConfig().getShardingTotalCount();
         for (int i = 0; i < shardingTotalCount; i++) {
+            //desc 获取匹配本机需要处理的分片
             if (jobInstance.getJobInstanceId().equals(jobNodeStorage.getJobNodeData(ShardingNode.getInstanceNode(i)))) {
                 result.add(i);
             }

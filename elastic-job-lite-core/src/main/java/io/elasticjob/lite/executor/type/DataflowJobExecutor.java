@@ -53,7 +53,9 @@ public final class DataflowJobExecutor extends AbstractElasticJobExecutor {
         List<Object> data = fetchData(shardingContext);
         while (null != data && !data.isEmpty()) {
             processData(shardingContext, data);
+            //desc 判断流式计算条件
             if (!getJobFacade().isEligibleForJobRunning()) {
+                //作业不可以继续运行
                 break;
             }
             data = fetchData(shardingContext);

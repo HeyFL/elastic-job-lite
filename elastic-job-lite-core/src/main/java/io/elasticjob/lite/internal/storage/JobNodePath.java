@@ -45,6 +45,7 @@ public final class JobNodePath {
     
     /**
      * 获取节点全路径.
+     * desc /[jobName]/leader/sharding/necessary
      * 
      * @param node 节点名称
      * @return 节点全路径
